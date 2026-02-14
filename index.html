@@ -2,207 +2,120 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>UPI Merchant Decoder</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0a2540" />
+  <title>UPI QR Decoder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-  <!-- QR Scanner -->
+  <!-- QR Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode"></script>
 
-  <!-- PWA Manifest (inline) -->
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- PWA Manifest -->
   <link rel="manifest" href="data:application/manifest+json,{
-    &quot;name&quot;:&quot;UPI Merchant Decoder&quot;,
-    &quot;short_name&quot;:&quot;UPI Decoder&quot;,
+    &quot;name&quot;:&quot;UPI QR Decoder&quot;,
+    &quot;short_name&quot;:&quot;UPI Decode&quot;,
     &quot;start_url&quot;:&quot;.&quot;,
     &quot;display&quot;:&quot;standalone&quot;,
-    &quot;background_color&quot;:&quot;#0a2540&quot;,
-    &quot;theme_color&quot;:&quot;#0a2540&quot;,
+    &quot;background_color&quot;:&quot;#0f172a&quot;,
+    &quot;theme_color&quot;:&quot;#0f172a&quot;,
     &quot;icons&quot;:[{
       &quot;src&quot;:&quot;https://cdn-icons-png.flaticon.com/512/891/891462.png&quot;,
       &quot;sizes&quot;:&quot;192x192&quot;,
       &quot;type&quot;:&quot;image/png&quot;
     }]
   }">
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(180deg, #0a2540, #020617);
-      color: #f8fafc;
-      padding: 16px;
-    }
-
-    h1 {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-
-    .card {
-      background: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-    }
-
-    .label {
-      font-size: 12px;
-      text-transform: uppercase;
-      color: #94a3b8;
-      margin-bottom: 4px;
-      letter-spacing: .05em;
-    }
-
-    .value {
-      font-size: 15px;
-      word-break: break-word;
-    }
-
-    .highlight {
-      font-size: 22px;
-      font-weight: 700;
-      color: #22c55e;
-    }
-
-    .warn {
-      color: #fb7185;
-      font-weight: 600;
-    }
-
-    #reader {
-      max-width: 360px;
-      margin: 0 auto 16px;
-    }
-  </style>
 </head>
 
 <body>
 
-<h1>📲 UPI Merchant Decoder</h1>
+<div class="app">
 
-<div id="reader"></div>
+  <!-- Header -->
+  <header class="header">
+    <div class="header__icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><line x1="21" y1="14" x2="21" y2="21"/><line x1="14" y1="21" x2="21" y2="21"/>
+      </svg>
+    </div>
+    <h1 class="header__title">UPI QR Decoder</h1>
+    <p class="header__subtitle">Scan &middot; Decode &middot; Check Rewards</p>
+  </header>
 
-<div class="card">
-  <div class="label">Merchant Name</div>
-  <div id="merchantName" class="value">—</div>
+  <!-- Scanner -->
+  <section class="scanner-section" id="scannerSection">
+    <div class="scanner-label">
+      <span class="scanner-label__dot"></span>
+      Camera Active
+    </div>
+    <div class="scanner-wrapper">
+      <div id="reader"></div>
+    </div>
+  </section>
+
+  <!-- Empty State -->
+  <div id="emptyState" class="empty-state">
+    <div class="empty-state__icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/>
+      </svg>
+    </div>
+    <p class="empty-state__text">Point your camera at a UPI QR code<br/>to decode merchant details</p>
+  </div>
+
+  <!-- Results -->
+  <div id="results" class="results">
+
+    <div id="typeBadge"></div>
+
+    <div class="section-title">Payment Details</div>
+    <div id="merchantInfoCards"></div>
+
+    <div class="divider"></div>
+    <div class="section-title">Kiwi Rewards Eligibility</div>
+    <div id="kiwiRewardsCard" class="kiwi-section"></div>
+
+    <div class="divider"></div>
+    <div class="section-title">Raw UPI Data</div>
+
+    <div class="url-card">
+      <div class="url-card__header" onclick="toggleUrlExpand()">
+        <span class="url-card__label">Full UPI URL</span>
+        <span class="url-card__toggle" id="urlToggle">Show &#9662;</span>
+      </div>
+      <div class="url-card__body" id="urlBody">
+        <div class="url-card__url" id="fullUpiUrl"></div>
+      </div>
+    </div>
+
+    <div class="url-card">
+      <div class="url-card__header" onclick="toggleParamsExpand()">
+        <span class="url-card__label">All UPI Parameters</span>
+        <span class="url-card__toggle" id="paramsToggle">Show &#9662;</span>
+      </div>
+      <div class="url-card__body" id="paramsBody">
+        <table class="params-table" id="paramsTable">
+          <thead><tr><th>Param</th><th>Value</th></tr></thead>
+          <tbody id="paramsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <button class="scan-again-btn visible" onclick="resetScanner()">Scan Another QR Code</button>
+  </div>
+
 </div>
 
-<div class="card">
-  <div class="label">Merchant Code (MCC)</div>
-  <div id="mcc" class="highlight">—</div>
-</div>
-
-<div class="card">
-  <div class="label">Merchant Category</div>
-  <div id="category" class="value">—</div>
-</div>
-
-<div class="card">
-  <div class="label">Decoded UPI URL</div>
-  <div id="upiUrl" class="value">—</div>
-</div>
-
-<script>
-/* ===== FULL MCC MAP (Standard ISO / UPI compatible) ===== */
-const mccCategories = {
-  "0742": "Veterinary Services",
-  "1520": "General Contractors",
-  "1711": "Plumbing / Heating",
-  "1731": "Electrical Contractors",
-  "4111": "Transport / Rail / Metro",
-  "4121": "Taxi / Cab Services",
-  "4131": "Bus Lines",
-  "4814": "Telecom Services",
-  "4816": "Online Marketplaces / Digital Goods",
-  "4899": "Cable / Internet Providers",
-  "4900": "Utilities",
-  "5111": "Stationery / Office Supplies",
-  "5192": "Books / Newspapers",
-  "5211": "Building Materials",
-  "5311": "Department Stores",
-  "5411": "Grocery Stores / Supermarkets",
-  "5499": "Food & Convenience Stores",
-  "5541": "Fuel / Petrol Pumps",
-  "5651": "Clothing Stores",
-  "5691": "Apparel / Accessories",
-  "5712": "Furniture Stores",
-  "5732": "Electronics Stores",
-  "5812": "Restaurants / Dining",
-  "5814": "Fast Food / Cafes",
-  "5912": "Pharmacies",
-  "5941": "Sporting Goods",
-  "5942": "Book Stores",
-  "5944": "Jewellery Stores",
-  "5999": "Misc Retail",
-  "6011": "Financial Institutions",
-  "6300": "Insurance",
-  "6513": "Real Estate",
-  "7011": "Hotels / Lodging",
-  "7210": "Laundry / Cleaning",
-  "7299": "Personal Services",
-  "7399": "Business / Professional Services",
-  "7832": "Cinema / Entertainment",
-  "7841": "Video / Streaming",
-  "7999": "Recreation Services",
-  "8211": "Schools / Education",
-  "8299": "Educational Services",
-  "8398": "Charities / NGOs",
-  "8999": "Professional Services"
-};
-
-function parseUPI(uri) {
-  if (!uri.startsWith("upi://")) return null;
-  const query = uri.split("?")[1] || "";
-  const params = new URLSearchParams(query);
-  return {
-    upiUrl: uri,
-    merchantName: params.get("pn"),
-    mcc: params.get("mc")
-  };
-}
-
-function onScanSuccess(decodedText) {
-  const data = parseUPI(decodedText);
-  document.getElementById("upiUrl").innerText = decodedText;
-
-  if (!data || !data.mcc) {
-    document.getElementById("merchantName").innerHTML =
-      "<span class='warn'>Personal / Non-merchant QR</span>";
-    document.getElementById("mcc").innerHTML =
-      "<span class='warn'>N/A</span>";
-    document.getElementById("category").innerText =
-      "No merchant category available";
-    return;
-  }
-
-  document.getElementById("merchantName").innerText =
-    decodeURIComponent(data.merchantName || "Unknown Merchant");
-
-  document.getElementById("mcc").innerText = data.mcc;
-
-  document.getElementById("category").innerText =
-    mccCategories[data.mcc] || "Unmapped / Custom Merchant Category";
-}
-
-new Html5Qrcode("reader").start(
-  { facingMode: "environment" },
-  { fps: 10, qrbox: 250 },
-  onScanSuccess
-);
-
-/* ===== PWA SERVICE WORKER (INLINE) ===== */
-if ("serviceWorker" in navigator) {
-  const sw = `
-    self.addEventListener('install', e => self.skipWaiting());
-    self.addEventListener('fetch', e => {});
-  `;
-  const blob = new Blob([sw], { type: "text/javascript" });
-  navigator.serviceWorker.register(URL.createObjectURL(blob));
-}
-</script>
+<!-- App Entry Point (ES Module) -->
+<script type="module" src="js/app.js"></script>
 
 </body>
 </html>
