@@ -124,8 +124,11 @@ body {
   border: none !important;
 }
 
+/* iOS requires playsinline for inline video; also prevent object-fit issues */
 .scanner-wrapper #reader video {
   border-radius: var(--radius-lg);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 .scanner-wrapper #reader__scan_region {
