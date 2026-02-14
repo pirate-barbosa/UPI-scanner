@@ -1,6 +1,6 @@
 # UPI QR Decoder
 
-[![Deployment](https://img.shields.io/github/deployments/saparavasthu/kiwi-reward-scanner/github-pages?label=deploy&logo=github)](https://saparavasthu.github.io/kiwi-reward-scanner/)
+[![Deployment](https://img.shields.io/github/deployments/pirate-barbosa/kiwi-reward-scanner/github-pages?label=deploy&logo=github)](https://pirate-barbosa.github.io/kiwi-reward-scanner/)
 
 Scan UPI QR codes to decode merchant details and check Kiwi credit card reward eligibility — entirely offline, right from your phone.
 
