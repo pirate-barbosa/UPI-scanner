@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>UPI Merchant Decoder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0a2540" />
+
+  <!-- QR Scanner -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <!-- PWA Manifest (inline) -->
+  <link rel="manifest" href="data:application/manifest+json,{
+    &quot;name&quot;:&quot;UPI Merchant Decoder&quot;,
+    &quot;short_name&quot;:&quot;UPI Decoder&quot;,
+    &quot;start_url&quot;:&quot;.&quot;,
+    &quot;display&quot;:&quot;standalone&quot;,
+    &quot;background_color&quot;:&quot;#0a2540&quot;,
+    &quot;theme_color&quot;:&quot;#0a2540&quot;,
+    &quot;icons&quot;:[{
+      &quot;src&quot;:&quot;https://cdn-icons-png.flaticon.com/512/891/891462.png&quot;,
+      &quot;sizes&quot;:&quot;192x192&quot;,
+      &quot;type&quot;:&quot;image/png&quot;
+    }]
+  }">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(180deg, #0a2540, #020617);
+      color: #f8fafc;
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .card {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 4px;
+      letter-spacing: .05em;
+    }
+
+    .value {
+      font-size: 15px;
+      word-break: break-word;
+    }
+
+    .highlight {
+      font-size: 22px;
+      font-weight: 700;
+      color: #22c55e;
+    }
+
+    .warn {
+      color: #fb7185;
+      font-weight: 600;
+    }
+
+    #reader {
+      max-width: 360px;
+      margin: 0 auto 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>📲 UPI Merchant Decoder</h1>
+
+<div id="reader"></div>
+
+<div class="card">
+  <div class="label">Merchant Name</div>
+  <div id="merchantName" class="value">—</div>
+</div>
+
+<div class="card">
+  <div class="label">Merchant Code (MCC)</div>
+  <div id="mcc" class="highlight">—</div>
+</div>
+
+<div class="card">
+  <div class="label">Merchant Category</div>
+  <div id="category" class="value">—</div>
+</div>
+
+<div class="card">
+  <div class="label">Decoded UPI URL</div>
+  <div id="upiUrl" class="value">—</div>
+</div>
+
+<script>
+/* ===== FULL MCC MAP (Standard ISO / UPI compatible) ===== */
+const mccCategories = {
+  "0742": "Veterinary Services",
+  "1520": "General Contractors",
+  "1711": "Plumbing / Heating",
+  "1731": "Electrical Contractors",
+  "4111": "Transport / Rail / Metro",
+  "4121": "Taxi / Cab Services",
+  "4131": "Bus Lines",
+  "4814": "Telecom Services",
+  "4816": "Online Marketplaces / Digital Goods",
+  "4899": "Cable / Internet Providers",
+  "4900": "Utilities",
+  "5111": "Stationery / Office Supplies",
+  "5192": "Books / Newspapers",
+  "5211": "Building Materials",
+  "5311": "Department Stores",
+  "5411": "Grocery Stores / Supermarkets",
+  "5499": "Food & Convenience Stores",
+  "5541": "Fuel / Petrol Pumps",
+  "5651": "Clothing Stores",
+  "5691": "Apparel / Accessories",
+  "5712": "Furniture Stores",
+  "5732": "Electronics Stores",
+  "5812": "Restaurants / Dining",
+  "5814": "Fast Food / Cafes",
+  "5912": "Pharmacies",
+  "5941": "Sporting Goods",
+  "5942": "Book Stores",
+  "5944": "Jewellery Stores",
+  "5999": "Misc Retail",
+  "6011": "Financial Institutions",
+  "6300": "Insurance",
+  "6513": "Real Estate",
+  "7011": "Hotels / Lodging",
+  "7210": "Laundry / Cleaning",
+  "7299": "Personal Services",
+  "7399": "Business / Professional Services",
+  "7832": "Cinema / Entertainment",
+  "7841": "Video / Streaming",
+  "7999": "Recreation Services",
+  "8211": "Schools / Education",
+  "8299": "Educational Services",
+  "8398": "Charities / NGOs",
+  "8999": "Professional Services"
+};
+
+function parseUPI(uri) {
+  if (!uri.startsWith("upi://")) return null;
+  const query = uri.split("?")[1] || "";
+  const params = new URLSearchParams(query);
+  return {
+    upiUrl: uri,
+    merchantName: params.get("pn"),
+    mcc: params.get("mc")
+  };
+}
+
+function onScanSuccess(decodedText) {
+  const data = parseUPI(decodedText);
+  document.getElementById("upiUrl").innerText = decodedText;
+
+  if (!data || !data.mcc) {
+    document.getElementById("merchantName").innerHTML =
+      "<span class='warn'>Personal / Non-merchant QR</span>";
+    document.getElementById("mcc").innerHTML =
+      "<span class='warn'>N/A</span>";
+    document.getElementById("category").innerText =
+      "No merchant category available";
+    return;
+  }
+
+  document.getElementById("merchantName").innerText =
+    decodeURIComponent(data.merchantName || "Unknown Merchant");
+
+  document.getElementById("mcc").innerText = data.mcc;
+
+  document.getElementById("category").innerText =
+    mccCategories[data.mcc] || "Unmapped / Custom Merchant Category";
+}
+
+new Html5Qrcode("reader").start(
+  { facingMode: "environment" },
+  { fps: 10, qrbox: 250 },
+  onScanSuccess
+);
+
+/* ===== PWA SERVICE WORKER (INLINE) ===== */
+if ("serviceWorker" in navigator) {
+  const sw = `
+    self.addEventListener('install', e => self.skipWaiting());
+    self.addEventListener('fetch', e => {});
+  `;
+  const blob = new Blob([sw], { type: "text/javascript" });
+  navigator.serviceWorker.register(URL.createObjectURL(blob));
+}
+</script>
+
+</body>
+</html>
