@@ -246,6 +246,23 @@ window.updateCalc = function () {
 
 /* ── Render: Quick Pay Actions ───────────────────────────── */
 
+/**
+ * Build the list of UPI apps with their specific deep-link schemes.
+ * iOS does NOT have a system-level UPI app picker — the generic upi:// scheme
+ * just opens whichever single app registered it (often WhatsApp).
+ * So we always show individual app buttons with their known URL schemes.
+ */
+function getUpiApps(queryString) {
+  return [
+    { name: 'Kiwi',     scheme: 'kiwi://upi/pay' + queryString,     color: '#34d399', id: 'kiwi' },
+    { name: 'GPay',     scheme: 'tez://upi/pay' + queryString,      color: '#4285F4', id: 'gpay' },
+    { name: 'PhonePe',  scheme: 'phonepe://pay' + queryString,      color: '#5F259F', id: 'phonepe' },
+    { name: 'Paytm',    scheme: 'paytm://upi/pay' + queryString,    color: '#00BAF2', id: 'paytm' },
+    { name: 'CRED',     scheme: 'cred://upi/pay' + queryString,     color: '#D4D4D4', id: 'cred' },
+    { name: 'BHIM',     scheme: 'bhim://upi/pay' + queryString,     color: '#00897B', id: 'bhim' }
+  ];
+}
+
 function renderPayActions(data, eligible) {
   // Only show pay actions for valid UPI URIs
   if (!data || !data.raw || !data.raw.toLowerCase().startsWith('upi://')) {
@@ -255,12 +272,16 @@ function renderPayActions(data, eligible) {
 
   DOM.payActions.style.display = 'block';
   var upiUri = data.raw;
+  var queryStart = upiUri.indexOf('?');
+  var queryString = queryStart !== -1 ? upiUri.substring(queryStart) : '';
+  var apps = getUpiApps(queryString);
   var html = '';
 
   if (eligible === true) {
-    // Kiwi-eligible — prominent "Pay via Kiwi" button
+    // Kiwi-eligible — show Kiwi prominently, then other apps
+    var kiwiScheme = apps[0].scheme; // Kiwi is first
     html =
-      '<a href="' + escapeHtml(upiUri) + '" class="pay-btn pay-btn--kiwi">' +
+      '<a href="' + escapeHtml(kiwiScheme) + '" class="pay-btn pay-btn--kiwi">' +
         '<div class="pay-btn__left">' +
           '<div class="pay-btn__icon pay-btn__icon--kiwi">' +
             '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' +
@@ -272,48 +293,31 @@ function renderPayActions(data, eligible) {
         '</div>' +
         '<svg class="pay-btn__arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>' +
       '</a>' +
-      '<p class="pay-hint">Select <strong>Kiwi</strong> from the app picker to earn rewards</p>';
+      '<p class="pay-hint">Or pay with another app</p>' +
+      renderAppGrid(apps, 'kiwi'); // exclude Kiwi from the grid since it's shown above
   } else {
-    // Not eligible or P2P — generic pay + app shortcuts
+    // Not eligible or P2P — show all apps in a grid
     html =
-      '<a href="' + escapeHtml(upiUri) + '" class="pay-btn pay-btn--generic">' +
-        '<div class="pay-btn__left">' +
-          '<div class="pay-btn__icon pay-btn__icon--upi">' +
-            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>' +
-          '</div>' +
-          '<div>' +
-            '<div class="pay-btn__title">Pay via UPI</div>' +
-            '<div class="pay-btn__subtitle">Opens installed UPI apps</div>' +
-          '</div>' +
-        '</div>' +
-        '<svg class="pay-btn__arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>' +
-      '</a>' +
-      renderAppShortcuts(upiUri);
+      '<p class="pay-section-intro">Choose a UPI app to pay</p>' +
+      renderAppGrid(apps, null);
   }
 
   DOM.payActionsContent.innerHTML = html;
 }
 
-function renderAppShortcuts(upiUri) {
-  var queryStart = upiUri.indexOf('?');
-  var queryString = queryStart !== -1 ? upiUri.substring(queryStart) : '';
-
-  var apps = [
-    { name: 'GPay',    scheme: 'tez://upi/pay' + queryString,   color: '#4285F4' },
-    { name: 'PhonePe', scheme: 'phonepe://pay' + queryString,   color: '#5F259F' },
-    { name: 'Paytm',   scheme: 'paytm://upi/pay' + queryString, color: '#00BAF2' },
-    { name: 'BHIM',    scheme: upiUri,                           color: '#00897B' }
-  ];
-
-  var html = '<div class="pay-apps-row">';
+function renderAppGrid(apps, excludeId) {
+  var html = '<div class="pay-apps-grid">';
   for (var i = 0; i < apps.length; i++) {
+    if (excludeId && apps[i].id === excludeId) continue;
     html +=
-      '<a href="' + escapeHtml(apps[i].scheme) + '" class="pay-app-chip" style="--app-color:' + apps[i].color + ';">' +
-        apps[i].name +
+      '<a href="' + escapeHtml(apps[i].scheme) + '" class="pay-app-btn" style="--app-color:' + apps[i].color + ';">' +
+        '<div class="pay-app-btn__icon" style="background: color-mix(in srgb, ' + apps[i].color + ' 15%, transparent);">' +
+          '<span style="color:' + apps[i].color + '; font-weight:800; font-size:16px;">' + apps[i].name.charAt(0) + '</span>' +
+        '</div>' +
+        '<span class="pay-app-btn__name">' + apps[i].name + '</span>' +
       '</a>';
   }
   html += '</div>';
-
   return html;
 }
 
