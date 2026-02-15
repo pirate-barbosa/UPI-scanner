@@ -4,7 +4,7 @@
  * Bump CACHE_VERSION when you deploy new code so the old cache is replaced.
  */
 
-const CACHE_VERSION = 'upi-decoder-v3';
+const CACHE_VERSION = 'upi-decoder-v4';
 
 /**
  * All local assets that make up the app shell.
@@ -53,6 +53,13 @@ self.addEventListener('activate', function (event) {
       return self.clients.claim();
     })
   );
+});
+
+/* ── Message: respond with cache version for UI display ──── */
+self.addEventListener('message', function (event) {
+  if (event.data && event.data.type === 'GET_VERSION') {
+    event.ports[0].postMessage({ version: CACHE_VERSION });
+  }
 });
 
 /* ── Fetch: cache-first, falling back to network ─────────── */
