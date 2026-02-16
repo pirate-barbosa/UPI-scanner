@@ -1,6 +1,6 @@
 {
-  "name": "UPI QR Decoder",
-  "short_name": "UPI Decode",
+  "name": "Kiwi Reward Scanner",
+  "short_name": "Kiwi Reward Scanner",
   "description": "Scan UPI QR codes to decode merchant details and check Kiwi reward eligibility",
   "start_url": "./index.html",
   "scope": "./",
