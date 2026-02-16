@@ -25,7 +25,7 @@ function displaySwVersion() {
   channel.port1.onmessage = function (event) {
     if (event.data && event.data.version) {
       var el = document.getElementById('appVersion');
-      if (el) el.textContent = 'SW: ' + event.data.version;
+      if (el) el.textContent = 'Version: ' + event.data.version;
     }
   };
   controller.postMessage({ type: 'GET_VERSION' }, [channel.port2]);
