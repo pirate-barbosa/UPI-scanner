@@ -1,5 +1,7 @@
 # KIWI REWARD SCANNER
 
+[![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=&slug=piratebarbosa&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff)](https://www.buymeacoffee.com/piratebarbosa)
+
 [![Deployment](https://img.shields.io/github/deployments/pirate-barbosa/kiwi-reward-scanner/github-pages?label=deploy&logo=github)](https://pirate-barbosa.github.io/kiwi-reward-scanner/)
 
 Scan UPI QR codes to decode merchant details and check Kiwi credit card reward eligibility — entirely offline, right from your phone.
