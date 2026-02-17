@@ -8,6 +8,10 @@ LIVE URL - https://pirate-barbosa.github.io/kiwi-reward-scanner/
 
 Scan UPI QR codes to decode merchant details and check Kiwi credit card reward eligibility — entirely offline, right from your phone.
 
+## DEMO
+
+https://github.com/user-attachments/assets/818bc402-4ae6-46cc-bc47-752bf949995d
+
 ## Features
 
 - **QR Scanning** — Live camera scanning or upload a QR image from your gallery
